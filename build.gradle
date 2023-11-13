@@ -1,0 +1,81 @@
+buildscript {
+	ext {
+		queryDslVersion = "5.0.0"
+	}
+}
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.17-SNAPSHOT'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+	id 'com.ewerk.gradle.plugins.querydsl' version '1.0.10'
+}
+apply plugin: 'com.ewerk.gradle.plugins.querydsl'
+
+group = 'kr.co.strato'
+
+java {
+	sourceCompatibility = '11'
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-websocket:2.7.14'
+	implementation 'org.springframework.boot:spring-boot-configuration-processor:2.7.2'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // swagger
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.15'
+
+	// utils
+	compileOnly 'org.projectlombok:lombok:1.18.26'
+	annotationProcessor 'org.projectlombok:lombok:1.18.26'
+	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+	implementation 'org.apache.commons:commons-lang3'
+
+	// kubernetes
+	implementation 'io.fabric8:kubernetes-client:6.8.1'
+
+	// DB
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.7.8'
+	implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.5'
+	implementation 'com.vladmihalcea:hibernate-types-55:2.20.0'
+	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
+	annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}"
+	implementation 'org.bgee.log4jdbc-log4j2:log4jdbc-log4j2-jdbc4:1.16'
+
+	// devtools
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+
+}
+
+def querydslDir = "$buildDir/generated/querydsl"
+
+querydsl {
+	jpa = true
+	querydslSourcesDir = querydslDir
+}
+sourceSets {
+	main.java.srcDir querydslDir
+}
+configurations {
+	querydsl.extendsFrom compileClasspath
+}
+compileQuerydsl {
+	options.annotationProcessorPath = configurations.querydsl
+}
